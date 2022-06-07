@@ -1,4 +1,8 @@
 services:
   prolog:
     build: .
+    entrypoint: swipl /app/start.pl
+    volumes:
+      - ./app:/app
+    
     

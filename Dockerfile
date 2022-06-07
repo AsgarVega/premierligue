@@ -1,3 +1,3 @@
-FROM swipl:stable as Base
+FROM swipl:8.4.2 as Base
 COPY ./app /app
-CMD ["swipl", "/app/start.pl"]
+# ENTRYPOINT [ "swipl /app/start.pl" ]
