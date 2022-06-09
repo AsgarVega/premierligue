@@ -5,7 +5,6 @@
 %importamos la base de conocimiento
 :- include(base).
 
-
 % valida si es un equipo valido
 es_un_equipo(Nombre):- equipo(Nombre,_).
 
@@ -19,18 +18,50 @@ marcador(Partido,Local,Visitante,GL,GV,Status):-
     %,write(Partido),tab(4),write(Local),write(' vs '),write(Visitante),tab(4),write(GL),write('-'),write(GV)
     .
 %Despliega la tabla
-% tabla(Temporada):-
-%     findall(X,participantes(Temporada,X),ListaParti)
-%     ,drawRow(ListaParti)
-%     .
-%     writeln('------------------------------')
-%     ,write('-'),write()
+drawtabla(Temporada):-
+    calcTabla(Temporada,Tabla)
+    % obtenemos la lista de IdEquipos
+    ,writeln('╔══════════════════════════════════╗')
+      ,write('║             ')
+                ,write(Temporada)
+                          ,writeln('             ║')
+    ,writeln('╠═══════════════════╦══════════════╣')
+    ,writeln('║       Equipo      ║    Puntos    ║')
+    ,writeln('╠═══════════════════╬══════════════╣')
+    % ,write(ListaParti)
+    ,drawRow(Tabla)
+    .
+
+%dibuja de manera recursiva las filas de la tabla
+drawRow([Nombre,Puntos|Tabla]):-
+    string_length(Nombre,Size)
+    ,Tab is 18-Size
+    ,write('║ '),write(Nombre),tab(Tab),write('║   '),write(Puntos),writeln('         ║')
+    ,drawRow(Tabla)
+    .
+drawRow([]):- writeln('╚═══════════════════╩══════════════╝').
+
+%inicia el metodo recursivo para generar una tabla con formato [Nombre,Puntos]
+calcTabla(Temporada,Tabla):-
+    findall(X,participantes(Temporada,X),ListaParti)
+    ,calcRow(Temporada,ListaParti,Tabla)
+    .
+% determina el fin recursivo de calcRow
+calcRow(_,[],Tabla):- Tabla=[].
+% obtiene el id de equipo, consigue el nombre y calcula los puntos acumulados hasta la fecha
+calcRow(Temporada,[IdEquipo|ListaParti],Tabla):-
+    equipo(Nombre,IdEquipo)
+    ,sumatoria(Temporada,IdEquipo,Puntos)
+    ,calcRow(Temporada,ListaParti,TablaTemp)
+    ,Row=[Nombre,Puntos]
+    ,append(TablaTemp,Row,Tabla)
+    .
 
 %sumatoria de puntos de la temporada
 sumatoria(Temporada,IdEquipo,Puntos):-
     %listamos los partidos en local y visitante
-    findall(X,evento(20182019,X,_,IdEquipo,_,_,_,terminado),Lloc)
-    ,findall(X,evento(20182019,X,_,_,_,IdEquipo,_,terminado),Lvis)
+    findall(X,evento(Temporada,X,_,IdEquipo,_,_,_,terminado),Lloc)
+    ,findall(X,evento(Temporada,X,_,_,_,IdEquipo,_,terminado),Lvis)
     ,sumPuntos(Lloc,local,Ploc)
     ,sumPuntos(Lvis,visitante,Pvis)
     %,write(Ploc),tab(4),writeln(Pvis) % debug
@@ -63,7 +94,7 @@ defPuntos(Partido,local,P):-
 %consulta de puntos en un partido especifico
 defPuntos(Partido,visitante,P):-
     % adquirimos el registro como local
-    evento(_,Partido,_,Id,GC,_,GF,_),
+    evento(_,Partido,_,_,GC,_,GF,_),
     %se hace la comparativa
     (GF==GC ->
         P is 1;
@@ -72,9 +103,3 @@ defPuntos(Partido,visitante,P):-
             P is 0
     )
     .
-    
-
-imprimir(Val):-
-    equipo(Val,_),
-    write(Val),write(' - '),fail.
-    
