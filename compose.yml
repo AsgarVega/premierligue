@@ -1,8 +1,11 @@
+version: '3'
 services:
-  prolog:
-    build: .
-    entrypoint: swipl /app/start.pl
+  example:
+    container_name: example
+    image: 'swipl:stable'
     volumes:
-      - ./app:/app
-    
-    
+      - './app:/app'
+    ports:
+      - '8000:8000'
+    command: bash
+    tty: true
